@@ -116,7 +116,13 @@ while True:
     if result == False:
         print ' Failed to connect to cell network'
     #....Send json string to Hologram
-    dataString = "hello, world!"
+#    dataString = "hello, world!"   # For testing
+    dataString = json.dumps({"time":              Time,
+                             "temperature":       str(bme280.temperature),
+                             "relativeHumidity":  str(bme280.humidity),
+                             "pressure":          str(bme280.pressure),
+                             "PM2.5":             str(pm25_env)                             
+    })
     response_code = hologram.sendMessage(dataString)
     print hologram.getResultString(response_code) # Prints 'Message sent successfully'.
     #....Close connection to 
