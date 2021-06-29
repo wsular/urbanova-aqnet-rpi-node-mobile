@@ -1,4 +1,4 @@
-#%%
+# %% Imports
 import sys
 print(sys.version)
 import board
@@ -11,7 +11,11 @@ import time
 import adafruit_bme280
 import math
 
-#%%
+# %% Set up interface to Hologram
+from Hologram.HologramCloud import HologramCloud
+hologram = HologramCloud(dict(), network='cellular')
+
+# %% Interface to sensors
 def default(o):
     if isinstance(o, (datetime.date, datetime.datetime)):
         return o.isoformat()
@@ -20,7 +24,6 @@ try:
     import struct
 except ImportError:
     import ustruct as struct
- 
  
 led = DigitalInOut(board.D13)
 led.direction = Direction.OUTPUT
@@ -40,6 +43,7 @@ fn = '/home/pi/SpokaneSchools/Data/aqSensorData_' + datetime.datetime.now().strf
 f  = open(fn,'w')
 f.write('Time,Temperature,RelativeHumidity,Pressure,PM25\n');
 
+# %% Take periodic measurements from sensors
 while True:
     Time = datetime.datetime.now().strftime('%Y%m%d %H:%M:%S')
 
@@ -106,7 +110,21 @@ while True:
     print("Particles > 10 um / 0.1L air:", particles_100um)
     print("---------------------------------------")
 
+    # Send data to Hologram
+    #....Open connection to Hologram
+    result = hologram.network.connect()
+    if result == False:
+        print ' Failed to connect to cell network'
+    #....Send json string to Hologram
+    dataString = "hello, world!"
+    response_code = hologram.sendMessage(dataString)
+    print hologram.getResultString(response_code) # Prints 'Message sent successfully'.
+    #....Close connection to 
+    hologram.network.disconnect()
+
+    # Wait for 10 seconds
     time.sleep(10) # delay ten seconds 
+
+    # Reset PM sensor buffer
     buffer = buffer[32:]
     f = open(fn, 'a')
-
